@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>登录</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+
+<body>
+    <div class="bg-glow-extra"></div>
+    <header>
+        <div class="nav-left">
+            <a href="/" class="logo">Game<span>Hub</span></a>
+            <a href="/">商店</a>
+            <a href="/publisher" id="nav-publisher" style="display:none;">发行商后台</a>
+
+        </div>
+        <nav class="nav-right">
+            <a href="/login" id="nav-login">登录</a>
+            <a href="/register" id="nav-register">注册</a>
+            <a href="/profile" id="nav-profile" style="display:none;">个人主页</a>
+            <div class="nav-menu" id="nav-mail-menu" style="display:none;">
+                <button class="nav-btn" id="nav-mail">邮箱</button>
+                <div class="nav-panel" id="nav-mail-panel">
+                    <h3>邮箱</h3>
+                    <div id="mail-list"></div>
+                    <p class="notice" id="mail-empty"></p>
+                    <h3 style="margin-top:12px;">好友申请</h3>
+                    <div id="mail-friend-requests"></div>
+                    <p class="notice" id="mail-request-empty"></p>
+                </div>
+            </div>
+            <div class="nav-menu" id="nav-friends-menu" style="display:none;">
+                <button class="nav-btn" id="nav-friends">好友</button>
+                <div class="nav-panel" id="nav-friends-panel">
+                    <h3>好友列表</h3>
+                    <div id="nav-friend-list"></div>
+                    <p class="notice" id="nav-friend-empty"></p>
+                    <h3 style="margin-top:12px;">搜索好友</h3>
+                    <div class="reply-form">
+                        <input type="text" id="nav-friend-search" placeholder="输入用户名" />
+                        <button class="btn secondary" id="nav-friend-search-btn">搜索</button>
+                    </div>
+                    <div class="reply-form" style="margin-top:8px;">
+                        <input type="text" id="nav-friend-message" maxlength="30" placeholder="申请说明（30字内）" />
+                    </div>
+                    <div id="nav-friend-results"></div>
+                </div>
+            </div>
+            <button class="nav-btn" id="nav-logout" style="display:none;">退出登录</button>
+        </nav>
+    </header>
+    <main class="container">
+        <section class="panel" style="max-width:460px;margin:40px auto;">
+            <div class="title">欢迎回来</div>
+            <div class="subtitle">登录后查看购买记录与评价功能</div>
+            <form class="form" id="login-form">
+                <input type="text" name="username" placeholder="用户名" required />
+                <input type="password" name="password" placeholder="密码" required />
+                <button class="btn" type="submit">登录</button>
+                <p class="notice" id="login-msg"></p>
+            </form>
+        </section>
+    </main>
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/nav.js"></script>
+</body>
+
+</html>

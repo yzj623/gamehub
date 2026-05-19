@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>邮件详情</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+
+<body>
+    <div class="bg-glow-extra"></div>
+    <header>
+        <div class="nav-left">
+            <a href="/" class="logo">Game<span>Hub</span></a>
+            <a href="/">商店</a>
+            <a href="/publisher" id="nav-publisher" style="display:none;">发行商后台</a>
+
+        </div>
+        <nav class="nav-right">
+            <a href="/login" id="nav-login">登录</a>
+            <a href="/register" id="nav-register">注册</a>
+            <a href="/profile" id="nav-profile" style="display:none;">个人主页</a>
+            <div class="nav-menu" id="nav-mail-menu" style="display:none;">
+                <button class="nav-btn" id="nav-mail">邮箱</button>
+                <div class="nav-panel" id="nav-mail-panel">
+                    <h3>邮箱</h3>
+                    <div id="mail-list"></div>
+                    <p class="notice" id="mail-empty"></p>
+                    <h3 style="margin-top:12px;">好友申请</h3>
+                    <div id="mail-friend-requests"></div>
+                    <p class="notice" id="mail-request-empty"></p>
+                </div>
+            </div>
+            <div class="nav-menu" id="nav-friends-menu" style="display:none;">
+                <button class="nav-btn" id="nav-friends">好友</button>
+                <div class="nav-panel" id="nav-friends-panel">
+                    <h3>好友列表</h3>
+                    <div id="nav-friend-list"></div>
+                    <p class="notice" id="nav-friend-empty"></p>
+                    <h3 style="margin-top:12px;">搜索好友</h3>
+                    <div class="reply-form">
+                        <input type="text" id="nav-friend-search" placeholder="输入用户名" />
+                        <button class="btn secondary" id="nav-friend-search-btn">搜索</button>
+                    </div>
+                    <div class="reply-form" style="margin-top:8px;">
+                        <input type="text" id="nav-friend-message" maxlength="30" placeholder="申请说明（30字内）" />
+                    </div>
+                    <div id="nav-friend-results"></div>
+                </div>
+            </div>
+            <button class="nav-btn" id="nav-logout" style="display:none;">退出登录</button>
+        </nav>
+    </header>
+    <main class="container">
+        <section class="panel" id="mail-detail">
+            <p class="notice">加载中...</p>
+        </section>
+    </main>
+    <script>
+        async function loadMail() {
+            const mailId = {{ mail_id }};
+            const container = document.getElementById("mail-detail");
+            try {
+                const res = await fetch("/api/mail/" + mailId);
+                const mail = await res.json();
+                if (mail.error) {
+                    container.innerHTML = '<p class="notice">' + mail.error + '</p>';
+                    return;
+                }
+                let html = '<div class="title">' + (mail.title || "邮件") + '</div>';
+                html += '<p class="subtitle">来自 ' + mail.from_username + ' · ' + new Date(mail.created_at).toLocaleString() + '</p>';
+                if (mail.content) {
+                    html += '<p style="margin-top:16px;">' + mail.content + '</p>';
+                }
+                if (mail.image_url) {
+                    html += '<img src="' + mail.image_url + '" alt="mail image" style="max-width:100%;border-radius:8px;margin-top:12px;" />';
+                }
+                container.innerHTML = html;
+            } catch (e) {
+                container.innerHTML = '<p class="notice">加载失败</p>';
+            }
+        }
+        loadMail();
+    </script>
+    <script src="/static/js/nav.js"></script>
+</body>
+
+</html>
