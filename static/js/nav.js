@@ -1,6 +1,15 @@
 async function fetchJson(url, options = {}) {
     const res = await fetch(url, { credentials: "include", ...options });
-    return res.json();
+    const contentType = res.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+        const text = await res.text();
+        throw new Error(`服务器返回了非 JSON 响应 (${res.status}): ${text.slice(0, 100)}`);
+    }
+    const data = await res.json();
+    if (!res.ok) {
+        throw new Error(data.error || `请求失败 (${res.status})`);
+    }
+    return data;
 }
 
 async function getSessionInfo() {
