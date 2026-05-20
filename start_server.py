@@ -37,7 +37,11 @@ def _read_statements(path: str) -> Iterable[str]:
 def _execute_sql_file(connection: pymysql.Connection, path: str) -> None:
     with connection.cursor() as cursor:
         for stmt in _read_statements(path):
-            cursor.execute(stmt)
+            # Use multi=True to handle statements containing semicolons
+            # (e.g. CREATE PROCEDURE / FUNCTION / TRIGGER with DELIMITER)
+            for result in cursor.execute(stmt, multi=True):
+                if result.with_rows:
+                    result.fetchall()
     connection.commit()
 
 
