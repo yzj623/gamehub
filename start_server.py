@@ -37,7 +37,13 @@ def _read_statements(path: str) -> Iterable[str]:
 def _execute_sql_file(connection: pymysql.Connection, path: str) -> None:
     with connection.cursor() as cursor:
         for stmt in _read_statements(path):
-            cursor.execute(stmt)
+            stripped = stmt.strip().upper()
+            if stripped.startswith("USE ") or stripped.startswith("CREATE DATABASE"):
+                continue
+            try:
+                cursor.execute(stmt)
+            except Exception as e:
+                print(f"[start_server] 跳过语句（可能已存在）: {e}")
     connection.commit()
 
 
@@ -259,12 +265,21 @@ def _ensure_database() -> None:
                     print(f"[start_server] {friend_file} 导入完成！")
             else:
                 print(f"[start_server] 数据库已有 {len(tables)} 张表，跳过导入。")
-                # Ensure FriendMessages table exists (phase5_friend_chat.sql)
-                friend_file = "phase5_friend_chat.sql"
-                if os.path.exists(friend_file):
-                    print(f"[start_server] 正在检查/导入 {friend_file} ...")
-                    _execute_sql_file(conn, friend_file)
-                    print(f"[start_server] {friend_file} 导入完成！")
+                # Ensure FriendMessages table exists
+                with conn.cursor() as cursor:
+                    cursor.execute("""
+                        CREATE TABLE IF NOT EXISTS FriendMessages (
+                            msg_id INT AUTO_INCREMENT PRIMARY KEY,
+                            sender_id INT NOT NULL,
+                            receiver_id INT NOT NULL,
+                            content TEXT,
+                            image_path VARCHAR(500),
+                            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                            FOREIGN KEY (sender_id) REFERENCES Users(user_id),
+                            FOREIGN KEY (receiver_id) REFERENCES Users(user_id)
+                        )
+                    """)
+                    print("[start_server] FriendMessages 表已确认存在。")
 
             # Always re-create stored procedures, functions, and triggers
             # (in case they were missing from a previous import)
