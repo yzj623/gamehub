@@ -115,42 +115,46 @@ searchInput.addEventListener("keydown", (e) => {
 
 
 async function loadAds() {
-
     if (!adTrack) return;
-    const res = await fetch(`/api/ads?ts=${Date.now()}`, {
-        credentials: "include",
-        cache: "no-store",
-    });
-    const ads = await res.json();
-    adTrack.innerHTML = "";
+    try {
+        const res = await fetch(`/api/ads?ts=${Date.now()}`, {
+            credentials: "include",
+            cache: "no-store",
+        });
+        const ads = await res.json();
+        adTrack.innerHTML = "";
 
-    if (!Array.isArray(ads) || ads.length === 0) {
+        if (!Array.isArray(ads) || ads.length === 0) {
+            adTrack.innerHTML = '<div class="notice">暂无广告</div>';
+            return;
+        }
+
+        ads.forEach((ad) => {
+            const card = document.createElement("div");
+            card.className = "ad-card";
+            const heroImage = (ad.image_urls || [])[0] || "";
+            card.innerHTML = `
+                <img class="ad-hero" src="${heroImage}" alt="${ad.ad_title}" />
+                <div class="ad-content">
+                    <div>
+                        <div class="title">${ad.ad_title}</div>
+                        <div class="subtitle">${ad.ad_content}</div>
+                    </div>
+                    <div class="ad-footer">
+                        <span>${ad.game_title} · ￥${ad.price}</span>
+                        <a class="btn" href="/game/${ad.game_id}">查看游戏</a>
+                    </div>
+                </div>
+        `;
+            adTrack.appendChild(card);
+        });
+
+        adScrollIndex = 0;
+        updateAdPosition();
+    } catch (err) {
+        console.error("loadAds error:", err);
         adTrack.innerHTML = '<div class="notice">暂无广告</div>';
-        return;
     }
-
-    ads.forEach((ad) => {
-        const card = document.createElement("div");
-        card.className = "ad-card";
-        const heroImage = (ad.image_urls || [])[0] || "";
-        card.innerHTML = `
-            <img class="ad-hero" src="${heroImage}" alt="${ad.ad_title}" />
-            <div class="ad-content">
-                <div>
-                    <div class="title">${ad.ad_title}</div>
-                    <div class="subtitle">${ad.ad_content}</div>
-                </div>
-                <div class="ad-footer">
-                    <span>${ad.game_title} · ￥${ad.price}</span>
-                    <a class="btn" href="/game/${ad.game_id}">查看游戏</a>
-                </div>
-            </div>
-    `;
-        adTrack.appendChild(card);
-    });
-
-    adScrollIndex = 0;
-    updateAdPosition();
 }
 
 function updateAdPosition() {
