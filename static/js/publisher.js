@@ -9,7 +9,7 @@ function renderPublisherUI() {
 
         <div class="panel" style="margin-bottom:20px;">
             <div class="subtitle">上架游戏</div>
-            <form id="publish-form" enctype="multipart/form-data">
+            <form id="publish-form" class="form" enctype="multipart/form-data">
                 <label>游戏名称</label>
                 <input type="text" name="title" required />
 
@@ -25,14 +25,14 @@ function renderPublisherUI() {
                 <label>游戏安装包</label>
                 <input type="file" name="package" required />
 
-                <button type="submit" class="btn">上架游戏</button>
-                <div id="publish-msg" class="status-msg"></div>
+                <button type="submit" class="btn" style="margin-top:4px;">上架游戏</button>
+                <div id="publish-msg" class="notice" style="margin-top:8px;"></div>
             </form>
         </div>
 
         <div class="panel" style="margin-bottom:20px;">
             <div class="subtitle">发布广告</div>
-            <form id="ad-form" enctype="multipart/form-data">
+            <form id="ad-form" class="form" enctype="multipart/form-data">
                 <label>广告标题</label>
                 <input type="text" name="title" required />
 
@@ -47,14 +47,14 @@ function renderPublisherUI() {
                 <label>广告图片（1-4张）</label>
                 <input type="file" name="images" accept="image/*" multiple required />
 
-                <button type="submit" class="btn">发布广告</button>
-                <div id="ad-msg" class="status-msg"></div>
+                <button type="submit" class="btn" style="margin-top:4px;">发布广告</button>
+                <div id="ad-msg" class="notice" style="margin-top:8px;"></div>
             </form>
         </div>
 
         <div class="panel">
             <div class="subtitle">发送邮件给玩家</div>
-            <form id="mail-form" enctype="multipart/form-data">
+            <form id="mail-form" class="form" enctype="multipart/form-data">
                 <label>关联游戏</label>
                 <select id="mail-game" name="game_id" required>
                     <option value="">请选择游戏</option>
@@ -66,8 +66,8 @@ function renderPublisherUI() {
                 <label>图片（与文字二选一）</label>
                 <input type="file" name="image" accept="image/*" />
 
-                <button type="submit" class="btn">发送邮件</button>
-                <div id="mail-msg" class="status-msg"></div>
+                <button type="submit" class="btn" style="margin-top:4px;">发送邮件</button>
+                <div id="mail-msg" class="notice" style="margin-top:8px;"></div>
             </form>
         </div>
     `;
