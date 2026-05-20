@@ -107,6 +107,14 @@ def _ensure_database() -> None:
                     print(f"[start_server] {friend_file} 导入完成！")
             else:
                 print(f"[start_server] 数据库已有 {len(tables)} 张表，跳过导入。")
+
+            # Always re-create stored procedures, functions, and triggers
+            # (in case they were missing from a previous import)
+            procs_file = "phase1_procs.sql"
+            if os.path.exists(procs_file):
+                print("[start_server] 正在重新创建存储过程/函数/触发器...")
+                _execute_sql_file(conn, procs_file)
+                print("[start_server] 存储过程/函数/触发器创建完成！")
     finally:
         conn.close()
 
