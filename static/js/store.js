@@ -172,7 +172,7 @@ function startAdScroll() {
         if (!cards.length) return;
         adScrollIndex = (adScrollIndex + 1) % cards.length;
         updateAdPosition();
-    }, 2000);
+    }, 3500);
 }
 
 window.addEventListener("resize", updateAdPosition);
