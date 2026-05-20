@@ -461,7 +461,7 @@ def games_by_price():
 def game_detail(game_id: int):
     game = fetch_one(
         """
-        SELECT g.*, GetSteamStatus(g.game_id) AS steam_status
+        SELECT g.*
         FROM Games g
         WHERE g.game_id = %s
         """,
@@ -471,6 +471,16 @@ def game_detail(game_id: int):
         return jsonify({"error": "game not found"}), 404
     game["cover_url"] = f"/static/{game['cover_path']}"
     game["video_url"] = f"/static/{game['video_path']}"
+    # Compute steam status label from avg_rating
+    avg = game.get("avg_rating")
+    if avg is None:
+        game["steam_status"] = "暂无评价"
+    elif avg >= 4.5:
+        game["steam_status"] = "好评如潮"
+    elif avg >= 3.0:
+        game["steam_status"] = "褒贬不一"
+    else:
+        game["steam_status"] = "差评如潮"
     return jsonify(game)
 
 
