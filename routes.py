@@ -245,7 +245,7 @@ def create_friend_request():
 
     request_row = fetch_one(
         """
-        SELECT request_id, status
+        SELECT request_id, from_user_id, to_user_id, status
         FROM FriendRequests
         WHERE (from_user_id=%s AND to_user_id=%s)
            OR (from_user_id=%s AND to_user_id=%s)
@@ -255,6 +255,21 @@ def create_friend_request():
         (user_id, to_user_id, to_user_id, user_id),
     )
     if request_row and request_row["status"] == "pending":
+        # If the other user already sent a request to us, auto-accept it
+        if int(request_row["from_user_id"]) == int(to_user_id) and int(request_row["to_user_id"]) == int(user_id):
+            execute(
+                "UPDATE FriendRequests SET status='accepted' WHERE request_id=%s",
+                (request_row["request_id"],),
+            )
+            execute(
+                "INSERT IGNORE INTO Friends(user_id, friend_id) VALUES (%s, %s)",
+                (request_row["from_user_id"], request_row["to_user_id"]),
+            )
+            execute(
+                "INSERT IGNORE INTO Friends(user_id, friend_id) VALUES (%s, %s)",
+                (request_row["to_user_id"], request_row["from_user_id"]),
+            )
+            return jsonify({"status": "accepted"}), 200
         return jsonify({"error": "request pending"}), 400
 
     execute(
@@ -805,8 +820,8 @@ def list_mail():
         SELECT m.mail_id, m.content, m.image_path, m.created_at,
                u.user_id AS from_user_id, u.username AS from_username, u.avatar_path
         FROM Mail m
-        JOIN Users u ON u.user_id = m.sender_id
-        WHERE m.receiver_id = %s
+        JOIN Users u ON u.user_id = m.from_user_id
+        WHERE m.to_user_id = %s
         ORDER BY m.created_at DESC
         """,
         (user_id,),
@@ -828,8 +843,8 @@ def get_mail_detail(mail_id: int):
         SELECT m.mail_id, m.content, m.image_path, m.game_id, m.created_at,
                u.user_id AS from_user_id, u.username AS from_username, u.avatar_path
         FROM Mail m
-        JOIN Users u ON u.user_id = m.sender_id
-        WHERE m.mail_id = %s AND m.receiver_id = %s
+        JOIN Users u ON u.user_id = m.from_user_id
+        WHERE m.mail_id = %s AND m.to_user_id = %s
         """,
         (mail_id, user_id),
     )
@@ -896,7 +911,7 @@ def publisher_send_mail():
         for owner in owners:
             execute(
                 """
-                INSERT INTO Mail(sender_id, receiver_id, game_id, content, image_path)
+                INSERT INTO Mail(from_user_id, to_user_id, game_id, content, image_path)
                 VALUES (%s, %s, %s, %s, %s)
                 """,
                 (user_id, owner["user_id"], game_id, content or None, image_path),
