@@ -238,31 +238,39 @@ reviewList?.addEventListener("click", async (event) => {
 });
 
 async function init() {
-    if (!gameId) {
-        const match = window.location.pathname.match(/\/game\/(\d+)/);
-        if (match) {
-            gameId = Number(match[1]);
+    try {
+        if (!gameId) {
+            const match = window.location.pathname.match(/\/game\/(\d+)/);
+            if (match) {
+                gameId = Number(match[1]);
+            }
         }
-    }
-    if (!gameId) {
-        document.getElementById("game-info").textContent = "游戏不存在";
-        return;
-    }
-    let game = await fetchJson(`/api/game/${gameId}`);
-    if (game.error) {
-        const match = window.location.pathname.match(/\/game\/(\d+)/);
-        if (match) {
-            gameId = Number(match[1]);
-            game = await fetchJson(`/api/game/${gameId}`);
+        if (!gameId) {
+            const info = document.getElementById("game-info");
+            if (info) info.textContent = "游戏不存在";
+            return;
         }
+        let game = await fetchJson(`/api/game/${gameId}`);
+        if (game.error) {
+            const match = window.location.pathname.match(/\/game\/(\d+)/);
+            if (match) {
+                gameId = Number(match[1]);
+                game = await fetchJson(`/api/game/${gameId}`);
+            }
+        }
+        if (game.error) {
+            const info = document.getElementById("game-info");
+            if (info) info.textContent = "游戏不存在";
+            return;
+        }
+        renderInfo(game);
+        await renderPurchase();
+        await loadReviews();
+    } catch (err) {
+        console.error("Game init error:", err);
+        const info = document.getElementById("game-info");
+        if (info) info.textContent = "加载失败，请稍后重试";
     }
-    if (game.error) {
-        document.getElementById("game-info").textContent = "游戏不存在";
-        return;
-    }
-    renderInfo(game);
-    await renderPurchase();
-    await loadReviews();
 }
 
 init();
