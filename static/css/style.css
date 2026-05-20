@@ -355,6 +355,21 @@ header .nav-right button:hover {
     color: var(--muted);
 }
 
+/* ===== Game Card Price & Rating ===== */
+.game-price {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--btn-green-text);
+    margin: 6px 0 2px;
+}
+
+.game-rating {
+    font-size: 13px;
+    font-weight: 500;
+    color: #fbbf24;
+    margin: 2px 0 8px;
+}
+
 /* ===== Badge ===== */
 .badge {
     display: inline-block;

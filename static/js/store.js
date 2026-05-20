@@ -47,8 +47,8 @@ async function loadGames(url, activeKey) {
             card.innerHTML = `
       <img src="${game.cover_url}" alt="${game.title}" />
       <h3>${game.title}</h3>
-      <p>价格：￥${game.price}</p>
-      <p>评分：${game.avg_rating}（${game.review_count}条）</p>
+      <p class="game-price">💰 ￥${game.price}</p>
+      <p class="game-rating">⭐ ${game.avg_rating}（${game.review_count}条）</p>
       ${extraInfo}
       <a class="btn" href="/game/${game.game_id}">查看详情</a>
     `;
