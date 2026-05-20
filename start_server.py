@@ -259,6 +259,12 @@ def _ensure_database() -> None:
                     print(f"[start_server] {friend_file} 导入完成！")
             else:
                 print(f"[start_server] 数据库已有 {len(tables)} 张表，跳过导入。")
+                # Ensure FriendMessages table exists (phase5_friend_chat.sql)
+                friend_file = "phase5_friend_chat.sql"
+                if os.path.exists(friend_file):
+                    print(f"[start_server] 正在检查/导入 {friend_file} ...")
+                    _execute_sql_file(conn, friend_file)
+                    print(f"[start_server] {friend_file} 导入完成！")
 
             # Always re-create stored procedures, functions, and triggers
             # (in case they were missing from a previous import)
