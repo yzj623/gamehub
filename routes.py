@@ -977,49 +977,52 @@ def send_friend_message():
 
 @api.get("/api/friend-chat/<int:friend_id>")
 def get_friend_chat(friend_id: int):
-    user_id = _require_login()
-    if not user_id:
-        return jsonify({"error": "unauthorized"}), 401
+    try:
+        user_id = _require_login()
+        if not user_id:
+            return jsonify({"error": "unauthorized"}), 401
 
-    # Verify they are friends
-    friend = fetch_one(
-        "SELECT 1 FROM Friends WHERE user_id=%s AND friend_id=%s",
-        (user_id, friend_id),
-    )
-    if not friend:
-        return jsonify({"error": "not friends"}), 403
+        # Verify they are friends
+        friend = fetch_one(
+            "SELECT 1 FROM Friends WHERE user_id=%s AND friend_id=%s",
+            (user_id, friend_id),
+        )
+        if not friend:
+            return jsonify({"error": "not friends"}), 403
 
-    # Get friend info
-    friend_info = fetch_one(
-        "SELECT user_id, username, avatar_path FROM Users WHERE user_id=%s",
-        (friend_id,),
-    )
-    if not friend_info:
-        return jsonify({"error": "user not found"}), 404
+        # Get friend info
+        friend_info = fetch_one(
+            "SELECT user_id, username, avatar_path FROM Users WHERE user_id=%s",
+            (friend_id,),
+        )
+        if not friend_info:
+            return jsonify({"error": "user not found"}), 404
 
-    # Get messages between the two users
-    messages = fetch_all(
-        """
-        SELECT msg_id, sender_id, receiver_id, content, image_path, created_at
-        FROM FriendMessages
-        WHERE (sender_id = %s AND receiver_id = %s)
-           OR (sender_id = %s AND receiver_id = %s)
-        ORDER BY created_at ASC
-        """,
-        (user_id, friend_id, friend_id, user_id),
-    )
+        # Get messages between the two users
+        messages = fetch_all(
+            """
+            SELECT msg_id, sender_id, receiver_id, content, image_path, created_at
+            FROM FriendMessages
+            WHERE (sender_id = %s AND receiver_id = %s)
+               OR (sender_id = %s AND receiver_id = %s)
+            ORDER BY created_at ASC
+            """,
+            (user_id, friend_id, friend_id, user_id),
+        )
 
-    for msg in messages:
-        msg["image_url"] = f"/static/{msg['image_path']}" if msg.get("image_path") else None
-        msg["is_me"] = (msg["sender_id"] == user_id)
+        for msg in messages:
+            msg["image_url"] = f"/static/{msg['image_path']}" if msg.get("image_path") else None
+            msg["is_me"] = (msg["sender_id"] == user_id)
 
-    return jsonify({
-        "friend": {
-            "user_id": friend_info["user_id"],
-            "username": friend_info["username"],
-            "avatar_url": f"/static/{friend_info['avatar_path']}",
-        },
-        "messages": messages,
-    })
+        return jsonify({
+            "friend": {
+                "user_id": friend_info["user_id"],
+                "username": friend_info["username"],
+                "avatar_url": f"/static/{friend_info['avatar_path']}",
+            },
+            "messages": messages,
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
