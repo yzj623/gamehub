@@ -1,6 +1,8 @@
 const grid = document.getElementById("game-grid");
 const statusEl = document.getElementById("status");
 const adTrack = document.getElementById("ad-track");
+const adSection = document.getElementById("ad-section");
+const rankSection = document.getElementById("rank-section");
 let adScrollIndex = 0;
 let adIntervalId;
 
@@ -24,25 +26,25 @@ function setActiveButton(activeKey) {
 async function loadGames(url, activeKey) {
     statusEl.textContent = "加载中...";
     setActiveButton(activeKey);
-    const res = await fetch(url, { credentials: "include" });
-    const data = await res.json();
-    grid.innerHTML = "";
+    try {
+        const res = await fetch(url, { credentials: "include" });
+        const data = await res.json();
+        grid.innerHTML = "";
 
-    if (!Array.isArray(data) || data.length === 0) {
-        const isSearching = adSection.style.display === "none";
-        statusEl.textContent = isSearching ? "暂无相关游戏" : "暂无游戏数据";
-        return;
-    }
+        if (!Array.isArray(data) || data.length === 0) {
+            const isSearching = adSection && adSection.style.display === "none";
+            statusEl.textContent = isSearching ? "暂无相关游戏" : "暂无游戏数据";
+            return;
+        }
 
-
-    statusEl.textContent = "";
-    data.forEach((game) => {
-        const card = document.createElement("div");
-        card.className = "card";
-        const extraInfo = game.sales_count !== undefined
-            ? `<p>🔥 已售 ${game.sales_count} 份</p>`
-            : "";
-        card.innerHTML = `
+        statusEl.textContent = "";
+        data.forEach((game) => {
+            const card = document.createElement("div");
+            card.className = "card";
+            const extraInfo = game.sales_count !== undefined
+                ? `<p>🔥 已售 ${game.sales_count} 份</p>`
+                : "";
+            card.innerHTML = `
       <img src="${game.cover_url}" alt="${game.title}" />
       <h3>${game.title}</h3>
       <p>价格：￥${game.price}</p>
@@ -50,9 +52,11 @@ async function loadGames(url, activeKey) {
       ${extraInfo}
       <a class="btn" href="/game/${game.game_id}">查看详情</a>
     `;
-        grid.appendChild(card);
-    });
-
+            grid.appendChild(card);
+        });
+    } catch (err) {
+        statusEl.textContent = "加载失败，请稍后重试";
+    }
 }
 
 buttons.all.addEventListener("click", () => {
@@ -80,8 +84,6 @@ loadGames("/api/games", "all");
 // ===== Search =====
 const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
-const adSection = document.getElementById("ad-section");
-const rankSection = document.getElementById("rank-section");
 
 function setSearchMode(isSearching) {
     if (isSearching) {
