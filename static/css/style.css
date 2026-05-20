@@ -971,19 +971,6 @@ header .nav-right button:hover {
         padding: 16px;
     }
 
-    .ad-card {
-        flex-direction: column;
-    }
-
-    .ad-hero,
-    .ad-content {
-        width: 100%;
-    }
-
-    .ad-hero {
-        height: 200px;
-    }
-
     .grid {
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
         gap: 12px;
