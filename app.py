@@ -15,15 +15,6 @@ def create_app() -> Flask:
 
     os.makedirs(app.config["UPLOAD_DIR"], exist_ok=True)
 
-    # Disable browser cache for HTML pages
-    @app.after_request
-    def no_cache(response):
-        if response.content_type and "text/html" in response.content_type:
-            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
-            response.headers["Pragma"] = "no-cache"
-            response.headers["Expires"] = "0"
-        return response
-
     # Global error handler for API routes - ensure JSON responses
     @app.errorhandler(400)
     def bad_request(e):

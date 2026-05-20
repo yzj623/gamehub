@@ -416,22 +416,14 @@ def list_ads():
         """
     )
     for ad in ads:
-        raw = ad.get("image_paths")
-        paths: list = []
-        if isinstance(raw, str):
+        paths = ad.get("image_paths") or []
+        if isinstance(paths, str):
             try:
-                paths = json.loads(raw)
+                paths = json.loads(paths)
             except json.JSONDecodeError:
                 paths = []
-        elif isinstance(raw, bytes):
-            try:
-                paths = json.loads(raw.decode("utf-8"))
-            except (json.JSONDecodeError, UnicodeDecodeError):
-                paths = []
-        elif isinstance(raw, (list, tuple)):
-            paths = list(raw)
         ad["image_urls"] = [f"/static/{path}" for path in paths if path]
-        ad["package_url"] = f"/static/{ad['package_path']}" if ad.get("package_path") else ""
+        ad["package_url"] = f"/static/{ad['package_path']}"
     return jsonify(ads)
 
 
