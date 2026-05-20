@@ -114,11 +114,10 @@ async function handleTopUp() {
   // Show success animation
   overlay.innerHTML = `
     <div class="success-animation">
-      <svg class="success-svg" viewBox="0 0 52 52">
+      <svg class="success-svg" viewBox="0 0 52 62">
         <circle class="circle-path" cx="26" cy="26" r="24" fill="none" stroke="#4ade80" stroke-width="3"/>
         <polyline class="check-path" points="14,27 23,36 38,18" fill="none" stroke="#4ade80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-        <text x="26" y="52" text-anchor="middle" fill="white" font-size="10" font-weight="600">充值成功</text>
-
+        <text x="26" y="56" text-anchor="middle" fill="white" font-size="10" font-weight="600">充值成功</text>
       </svg>
     </div>
   `;
