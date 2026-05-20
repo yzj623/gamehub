@@ -114,6 +114,13 @@ searchInput.addEventListener("keydown", (e) => {
 });
 
 
+function escapeHtml(text) {
+    if (!text) return "";
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 async function loadAds() {
     if (!adTrack) return;
     try {
@@ -134,14 +141,14 @@ async function loadAds() {
             card.className = "ad-card";
             const heroImage = (ad.image_urls || [])[0] || "";
             card.innerHTML = `
-                <img class="ad-hero" src="${heroImage}" alt="${ad.ad_title}" />
+                <img class="ad-hero" src="${escapeHtml(heroImage)}" alt="${escapeHtml(ad.ad_title)}" />
                 <div class="ad-content">
                     <div>
-                        <div class="title">${ad.ad_title}</div>
-                        <div class="subtitle">${ad.ad_content}</div>
+                        <div class="title">${escapeHtml(ad.ad_title)}</div>
+                        <div class="subtitle">${escapeHtml(ad.ad_content)}</div>
                     </div>
                     <div class="ad-footer">
-                        <span>${ad.game_title} · ￥${ad.price}</span>
+                        <span>${escapeHtml(ad.game_title)} · ￥${escapeHtml(ad.price)}</span>
                         <a class="btn" href="/game/${ad.game_id}">查看游戏</a>
                     </div>
                 </div>
