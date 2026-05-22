@@ -265,8 +265,8 @@ def _ensure_database() -> None:
                     print(f"[start_server] {friend_file} 导入完成！")
             else:
                 print(f"[start_server] 数据库已有 {len(tables)} 张表，跳过导入。")
-                # Ensure FriendMessages table exists
                 with conn.cursor() as cursor:
+                    # Ensure FriendMessages table exists
                     cursor.execute("""
                         CREATE TABLE IF NOT EXISTS FriendMessages (
                             msg_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -280,6 +280,18 @@ def _ensure_database() -> None:
                         )
                     """)
                     print("[start_server] FriendMessages 表已确认存在。")
+                    # Ensure Mail table has game_id column
+                    try:
+                        cursor.execute("""
+                            ALTER TABLE Mail
+                            ADD COLUMN game_id INT NULL,
+                            ADD CONSTRAINT fk_mail_game
+                                FOREIGN KEY (game_id) REFERENCES Games(game_id)
+                                ON UPDATE CASCADE ON DELETE SET NULL
+                        """)
+                        print("[start_server] Mail 表已添加 game_id 字段。")
+                    except Exception as e:
+                        print(f"[start_server] Mail 表 game_id 字段已存在（跳过）: {e}")
 
             # Always re-create stored procedures, functions, and triggers
             # (in case they were missing from a previous import)
