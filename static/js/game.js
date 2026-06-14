@@ -73,10 +73,14 @@ async function renderPurchase() {
             <button class="btn" id="buy-btn">购买游戏</button>
     `;
         document.getElementById("buy-btn").addEventListener("click", async () => {
-            // Check balance first
+            // Check login and role first
             const me = await fetchJson("/api/me");
             if (!me.logged_in) {
                 showPurchaseStatus("请先登录", "error");
+                return;
+            }
+            if (me.role === "publisher") {
+                showPurchaseStatus("发行商账号不能购买游戏", "error");
                 return;
             }
             const profile = await fetchJson(`/api/users/${me.user_id}/profile`);
@@ -134,6 +138,12 @@ const reviewEmpty = document.getElementById("review-empty");
 reviewForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     const msg = document.getElementById("review-msg");
+    // Check role first
+    const me = await fetchJson("/api/me");
+    if (me.logged_in && me.role === "publisher") {
+        msg.textContent = "发行商账号不能发表评价";
+        return;
+    }
     const formData = new FormData(reviewForm);
     const payload = Object.fromEntries(formData.entries());
     payload.game_id = Number(gameId);

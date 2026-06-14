@@ -519,6 +519,18 @@ header .nav-right button:hover {
     color: var(--muted);
 }
 
+.ad-game-info {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-bright);
+}
+
+.ad-game-info .ad-price {
+    color: var(--btn-green-text);
+    font-weight: 700;
+    font-size: 15px;
+}
+
 /* ===== Section ===== */
 .section {
     margin-bottom: 24px;

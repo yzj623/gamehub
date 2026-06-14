@@ -58,8 +58,8 @@
         </section>
     </main>
     <script>
+        const mailId = {{ mail_id }};
         async function loadMail() {
-            const mailId = {{ mail_id }};
             const container = document.getElementById("mail-detail");
             try {
                 const res = await fetch("/api/mail/" + mailId);
@@ -68,7 +68,7 @@
                     container.innerHTML = '<p class="notice">' + mail.error + '</p>';
                     return;
                 }
-                let html = '<div class="title">' + (mail.title || "邮件") + '</div>';
+                let html = '<div class="title">' + (mail.content ? mail.content.slice(0, 30) + (mail.content.length > 30 ? "..." : "") : "邮件") + '</div>';
                 html += '<p class="subtitle">来自 ' + mail.from_username + ' · ' + new Date(mail.created_at).toLocaleString() + '</p>';
                 if (mail.content) {
                     html += '<p style="margin-top:16px;">' + mail.content + '</p>';

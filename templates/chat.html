@@ -491,9 +491,27 @@
         }
 
         function formatTime(ts) {
-            const d = new Date(ts);
+            // Handle both "YYYY-MM-DD HH:MM:SS" and "YYYY-MM-DDTHH:MM:SS" formats
+            // Parse manually to avoid cross-browser Date() parsing issues
+            const parts = ts.split(/[- :T]/);
+            const d = new Date(
+                parseInt(parts[0], 10),  // year
+                parseInt(parts[1], 10) - 1,  // month (0-based)
+                parseInt(parts[2], 10),  // day
+                parseInt(parts[3], 10),  // hour
+                parseInt(parts[4], 10)   // minute
+            );
             const pad = n => String(n).padStart(2, "0");
-            return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            const now = new Date();
+            const isToday = d.getFullYear() === now.getFullYear() &&
+                d.getMonth() === now.getMonth() &&
+                d.getDate() === now.getDate();
+            const timeStr = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            if (isToday) {
+                return timeStr;
+            }
+            const dateStr = `${pad(d.getMonth() + 1)}/${pad(d.getDate())}`;
+            return `${dateStr} ${timeStr}`;
         }
 
         // Init

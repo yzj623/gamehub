@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 
+import datetime
 import hashlib
 import json
 import os
@@ -254,23 +255,32 @@ def create_friend_request():
         """,
         (user_id, to_user_id, to_user_id, user_id),
     )
-    if request_row and request_row["status"] == "pending":
-        # If the other user already sent a request to us, auto-accept it
-        if int(request_row["from_user_id"]) == int(to_user_id) and int(request_row["to_user_id"]) == int(user_id):
+    if request_row:
+        # 如果之前有一条 rejected 的申请，update 它重新变为 pending（因为唯一约束不允许重复 insert）
+        if request_row["status"] == "rejected":
             execute(
-                "UPDATE FriendRequests SET status='accepted' WHERE request_id=%s",
-                (request_row["request_id"],),
+                "UPDATE FriendRequests SET status='pending', message=%s, created_at=CURRENT_TIMESTAMP WHERE request_id=%s",
+                (message, request_row["request_id"]),
             )
-            execute(
-                "INSERT IGNORE INTO Friends(user_id, friend_id) VALUES (%s, %s)",
-                (request_row["from_user_id"], request_row["to_user_id"]),
-            )
-            execute(
-                "INSERT IGNORE INTO Friends(user_id, friend_id) VALUES (%s, %s)",
-                (request_row["to_user_id"], request_row["from_user_id"]),
-            )
-            return jsonify({"status": "accepted"}), 200
-        return jsonify({"error": "request pending"}), 400
+            return jsonify({"status": "sent"}), 201
+
+        if request_row["status"] == "pending":
+            # If the other user already sent a request to us, auto-accept it
+            if int(request_row["from_user_id"]) == int(to_user_id) and int(request_row["to_user_id"]) == int(user_id):
+                execute(
+                    "UPDATE FriendRequests SET status='accepted' WHERE request_id=%s",
+                    (request_row["request_id"],),
+                )
+                execute(
+                    "INSERT IGNORE INTO Friends(user_id, friend_id) VALUES (%s, %s)",
+                    (request_row["from_user_id"], request_row["to_user_id"]),
+                )
+                execute(
+                    "INSERT IGNORE INTO Friends(user_id, friend_id) VALUES (%s, %s)",
+                    (request_row["to_user_id"], request_row["from_user_id"]),
+                )
+                return jsonify({"status": "accepted"}), 200
+            return jsonify({"error": "request pending"}), 400
 
     execute(
         """
@@ -561,8 +571,10 @@ def top_up():
 
 def purchase():
     user_id = _require_login()
-    if not user_id or not _require_role("player"):
-        return jsonify({"error": "unauthorized"}), 401
+    if not user_id:
+        return jsonify({"error": "请先登录"}), 401
+    if not _require_role("player"):
+        return jsonify({"error": "发行商账号不能购买游戏"}), 403
 
     payload = request.get_json(force=True)
     game_id = payload.get("game_id")
@@ -580,8 +592,10 @@ def purchase():
 @api.post("/api/review")
 def review():
     user_id = _require_login()
-    if not user_id or not _require_role("player"):
-        return jsonify({"error": "unauthorized"}), 401
+    if not user_id:
+        return jsonify({"error": "请先登录"}), 401
+    if not _require_role("player"):
+        return jsonify({"error": "发行商账号不能发表评价"}), 403
 
     payload = request.get_json(force=True)
     game_id = payload.get("game_id")
@@ -820,8 +834,8 @@ def list_mail():
         SELECT m.mail_id, m.content, m.image_path, m.created_at,
                u.user_id AS from_user_id, u.username AS from_username, u.avatar_path
         FROM Mail m
-        JOIN Users u ON u.user_id = m.from_user_id
-        WHERE m.to_user_id = %s
+        JOIN Users u ON u.user_id = m.sender_id
+        WHERE m.receiver_id = %s
         ORDER BY m.created_at DESC
         """,
         (user_id,),
@@ -843,8 +857,8 @@ def get_mail_detail(mail_id: int):
         SELECT m.mail_id, m.content, m.image_path, m.game_id, m.created_at,
                u.user_id AS from_user_id, u.username AS from_username, u.avatar_path
         FROM Mail m
-        JOIN Users u ON u.user_id = m.from_user_id
-        WHERE m.mail_id = %s AND m.to_user_id = %s
+        JOIN Users u ON u.user_id = m.sender_id
+        WHERE m.mail_id = %s AND m.receiver_id = %s
         """,
         (mail_id, user_id),
     )
@@ -911,7 +925,7 @@ def publisher_send_mail():
         for owner in owners:
             execute(
                 """
-                INSERT INTO Mail(from_user_id, to_user_id, game_id, content, image_path)
+                INSERT INTO Mail(sender_id, receiver_id, game_id, content, image_path)
                 VALUES (%s, %s, %s, %s, %s)
                 """,
                 (user_id, owner["user_id"], game_id, content or None, image_path),
@@ -1013,6 +1027,9 @@ def get_friend_chat(friend_id: int):
         for msg in messages:
             msg["image_url"] = f"/static/{msg['image_path']}" if msg.get("image_path") else None
             msg["is_me"] = (msg["sender_id"] == user_id)
+            # Convert datetime to ISO string for consistent frontend parsing
+            if isinstance(msg.get("created_at"), datetime.datetime):
+                msg["created_at"] = msg["created_at"].strftime("%Y-%m-%d %H:%M:%S")
 
         return jsonify({
             "friend": {

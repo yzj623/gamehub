@@ -141,7 +141,7 @@ async function loadAds() {
                     <div class="subtitle">${ad.ad_content}</div>
                 </div>
                 <div class="ad-footer">
-                    <span>${ad.game_title} · ￥${ad.price}</span>
+                    <span class="ad-game-info">🎮 ${ad.game_title} &nbsp;|&nbsp; <span class="ad-price">💰 ￥${ad.price}</span></span>
                     <a class="btn" href="/game/${ad.game_id}">查看游戏</a>
                 </div>
             </div>
